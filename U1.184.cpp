@@ -28,6 +28,7 @@ struct person
 person *root;
 person *current;
 
+// Static data
 #define ANZAHL 6
 string list_name[ANZAHL] = {"Alpha", "Konrad Zuse", "Tim OReilly", "Bill Gates", "Mark Zuckerberg ", "Omega"};
 uint16_t list_gebtag[ANZAHL] = {1, 22, 06, 28, 14, 31};
@@ -37,7 +38,7 @@ uint16_t list_gebjahr[ANZAHL] = {0, 1910, 1954, 1955, 1984, 3600};
 // Function to generate an empty person
 person *gen_person()
 {
-    person *temp = new person; // Could also be used malloc
+    person *temp = new person; // Here you could also use malloc
     temp->name = "";
     temp->gebtag = 0;
     temp->gebmon = 0;
@@ -47,7 +48,7 @@ person *gen_person()
     return temp;
 }
 
-// Function to initialize the a list
+// Function to initialize a list
 int init_list()
 {
     // Create first element
@@ -255,7 +256,7 @@ int printOlderPerson()
 
         if (current != NULL)
         {
-            // Current is the user we are looking for
+            // The current pointer points to the user we are looking for
             cout << "Alle älteren Personen von " + current->toString() + ":\n";
             while (current->prev != NULL)
             {
