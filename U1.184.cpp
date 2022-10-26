@@ -112,6 +112,8 @@ int add_person()
     cin >> ngebjahr;
 
     current = root;
+
+    /** Urspünglicher Code der nicht richtig funktioniert hat */
     // while (!(current->gebjahr<=ngebjahr && current->next->gebjahr>=ngebjahr))
     // {
     //     current = current->next;
@@ -139,7 +141,6 @@ int add_person()
         temp->gebjahr = ngebjahr;
         temp->next = NULL;
         current->next = temp;
-
         // For prev
         temp->prev = current;
     }
@@ -150,7 +151,6 @@ int add_person()
         temp->gebjahr = ngebjahr;
         temp->next = current->next;
         current->next = temp;
-
         // For prev
         temp->prev = current;
         temp->next->prev = temp;
