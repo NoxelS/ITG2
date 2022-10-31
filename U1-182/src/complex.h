@@ -1,5 +1,6 @@
 #include <iostream>
 
+/** Apparently, we need this to make sure it only is compiled once */
 #ifndef COMPLEX_H
 #define COMPLEX_H
 
@@ -13,15 +14,19 @@ class complex {
     double imag;
 
    public:
+    /** Constructor */
     complex();
+
     /**
      * @brief Get the argument of a complex number
      */
     double arg();
+
     /**
      * @brief Get the norm of a complex number
      */
     double abs();
+
     /**
      * @brief Get the nth square root of the complex number
      */
@@ -46,6 +51,7 @@ class complex {
     // Getters
     double getReal();
     double getImag();
+
     // Setters
     void setReal(double);
     void setImag(double);

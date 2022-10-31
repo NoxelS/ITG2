@@ -26,10 +26,10 @@ double complex::abs() { return sqrt(real * real + imag * imag); }
 complex* complex::nsqrt(int n) {
     complex* roots = new complex[n];
     double r = abs();
-    double theta = arg();
+    double phi = arg();
     for (int i = 0; i < n; i++) {
-        roots[i].real = pow(r, 1.0 / n) * cos((theta + 2 * M_PI * i) / n);
-        roots[i].imag = pow(r, 1.0 / n) * sin((theta + 2 * M_PI * i) / n);
+        roots[i].real = pow(r, 1.0 / n) * cos((phi + 2 * M_PI * i) / n);
+        roots[i].imag = pow(r, 1.0 / n) * sin((phi + 2 * M_PI * i) / n);
     }
     return roots;
 }
