@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -g -w -Wall
+CFLAGS = -w
 
 demo: src/demo.o src/complex.o
 	$(CC) $(CFLAGS) -o demo src/demo.o src/complex.o
