@@ -11,3 +11,6 @@ clean:
 	rm -f *.o demo unit_tests
 	rm -f src/*.o
 	rm -f tests/*.o
+
+clean-output:
+	rm -f */*.o
