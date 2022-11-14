@@ -3,7 +3,6 @@ This is the project repository for the university module "Objektorientierte Spra
 
 
 ## Table of Contents
-- [Table of Contents](#table-of-contents)
 - library: Used to store code that is used across different projects
 - templtate: Used as boilerplate for new projects
 - U1-182:
