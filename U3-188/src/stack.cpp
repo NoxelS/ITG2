@@ -5,10 +5,7 @@ stack::node::node(T v, node* p) {
     prev = p;
 }
 
-stack::stack() {
-    stack_size = 0;
-    top = nullptr;
-}
+stack::stack(): stack_size(0), top(nullptr) {}
 
 stack::~stack() {
     while (size()) {
