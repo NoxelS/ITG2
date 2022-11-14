@@ -3,7 +3,6 @@ This is the project repository for the university module "Objektorientierte Spra
 
 
 ## Table of Contents
-- [library](https://github.com/NoxelS/ITG2/tree/main/library): Used to store code that is used across different projects
 - [template](https://github.com/NoxelS/ITG2/tree/main/template): Used as boilerplate for new projects
 - [U1-182](https://github.com/NoxelS/ITG2/tree/main/U1-182)
 - [U1-183](https://github.com/NoxelS/ITG2/tree/main/U1-183)
