@@ -1,9 +1,6 @@
 #include "stack.h"
 
-stack::node::node(T v, node* p) {
-    value = v;
-    prev = p;
-}
+stack::node::node(T v, node* p): value(v), prev(p) {}
 
 stack::stack(): stack_size(0), top(nullptr) {}
 
