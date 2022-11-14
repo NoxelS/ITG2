@@ -29,6 +29,6 @@ T stack::pop() {
     node* newTop = top->prev;
     delete top;
     top = newTop;
-    stack_size--;
+    --stack_size;
     return oldVlaue;
 }
