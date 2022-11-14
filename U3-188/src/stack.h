@@ -1,7 +1,8 @@
-#include <iostream>
 
 #ifndef STACK_H
 #define STACK_H STACK_H
+
+#include <iostream>
 
 /** Datatype for stack nodes */
 #define T double
