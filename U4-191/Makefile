@@ -7,13 +7,13 @@ CC	= g++
 CFLAGS	= -g -Wall -c -std=c++11
 LDFLAGS	= -g -lm -lrt
 SRC	= $(wildcard src/*.cpp)
-HDR	= $(wildcard src/*.h)
+HDR	= $(wildcard src/*.hpp)
 TESTS = $(wildcard tests/*.test.cpp)
 TESTS_OBJ = $(TESTS:.cpp=.o)
 OBJ	= $(SRC:.cpp=.o)
 EXE	= main #$(shell egrep -l ".* main\(.*\)" src/*.cpp | sed s/".cpp"/""/g | tail -n 1)
 
-all:	$(EXE) test
+all:	$(EXE)
 	rm -f */*.o
 	rm -f */*.s
 	rm -f */*.ii
@@ -24,8 +24,6 @@ $(EXE):	$(OBJ)
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-test: $(TESTS_OBJ)
-	${CC} ${LDFLAGS} -o test $(TESTS_OBJ)
 
 clean:
 	rm -f */*.o

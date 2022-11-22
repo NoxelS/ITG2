@@ -1,28 +1,9 @@
 #include <iostream>
 
+#include "../headers/A.hpp"
+#include "../headers/B.hpp"
+
 using namespace std;
-
-struct A {
-    double a;
-    A() { cout << " DFLT CTOR  A::A()\n"; }
-    A(double x) { cout << " CAST CTOR  A::A(double)\n"; }
-};
-
-struct B {
-    double b;
-    B() {
-        cout << " DFLT CTOR B::B()\n";
-        b = 1;
-    }
-    B(A& x) {
-        cout << " CAST CTOR B::B(A&)\n";
-        b = -x.a;
-    }
-    operator A() {
-        cout << " CAST OTOR B::operator A()\n";
-        return A(-b);
-    }
-};
 
 int main() {
     cout << endl << "A z1;\n";
@@ -36,4 +17,11 @@ int main() {
 
     cout << endl << "z1 = A(z2);\n";
     z1 = A(z2);
+
+    /*
+     * Die letzte Aufgabe verstehe ich nicht ganz, da Gnu immer den Cast Konstruktor ausführen wird und nicht den Cast
+     * Operator. Laut Styleguide soll auch immer der Cast Konstruktor bevorzugt werden.
+     * Die einzige Möglichkeit um den Cast Operator zu verwenden wäre es, wenn keine Signatur für den Cast Konstruktor
+     * exisitert.
+     */
 }
