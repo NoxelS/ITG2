@@ -14,6 +14,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: compile and run all tests
-      run: ./testall
+      run: ./.github/scripts/testall.sh
+      shell: bash
     - name: cleanup everything
-      run: ./cleanall
+      run: ./.github/scripts/cleanall.sh
+      shell: bash
