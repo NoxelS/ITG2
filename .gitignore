@@ -37,3 +37,13 @@
 # Abgaben
 *.tar
 *.zip
+
+main
+*/main
+*/src/main
+test
+*/test
+*/src/test
+unit_tests
+*/unit_tests
+*/src/unit_tests
