@@ -70,7 +70,7 @@ complex c_mul(complex c1, complex c2) {
 */
 void c_print(complex c) {
     if (c.eulerForm) {
-        std::cout << c.abs() << " * exp(" << c.arg() << "i)" << std::endl;
+      std::cout << c.abs() << " * exp(" << c.arg() << "i)" << std::endl;
     } else {
         std::cout << c.real << " + " << c.imag << "i" << std::endl;
     }
