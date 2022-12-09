@@ -4,6 +4,7 @@
 
 #include "area.hpp"
 #include "point.hpp"
+#include <math.h>
 
 void circle::input() {
     point* p1_tmp = new point;

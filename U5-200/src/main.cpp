@@ -18,11 +18,11 @@ std::string get_shape_name(int shape) {
     switch (shape) {
         case shape::circle:
             return "Circle";
-        case shape::rectangle:
+        case rectangle:
             return "Rectangle";
-        case shape::triangle:
+        case triangle:
             return "Triangle";
-        case shape::plainarea:
+        case plainarea:
             return "Plainarea";
         default:
             return "Unknown";
@@ -70,4 +70,6 @@ int main() {
     for (int i = 0; i < n; i++) {
         areas[i]->print();
     }
+
+    delete areas;
 };
