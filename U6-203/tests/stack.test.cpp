@@ -132,7 +132,7 @@ void test_types() {
     test_stack2->push('a');
     test_stack2->push('b');
     test_stack2->push('c');
-    
+
     TEST_CHECK(test_stack2->pop() == 'c');
     TEST_CHECK(test_stack2->pop() == 'b');
     TEST_CHECK(test_stack2->pop() == 'a');
@@ -162,6 +162,6 @@ TEST_LIST = {{"Initialization", test_initialization},
              {"Deconstructor", test_deconstrcutor},
              {"Copy Constructor", test_copy_constructor},
              {"Copy Operator", test_copy_operator},
-            {"Types", test_types},
-            {"Cast Constructor", test_cast_constructor},
+             {"Types", test_types},
+             {"Cast Constructor", test_cast_constructor},
              {0}};
