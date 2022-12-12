@@ -10,9 +10,9 @@ void mprint(int** ref) {
 
 template <class... T>
 void mprint(int** ref, double arg, T... rest) {
-    int oldC = counter++;
+    int previousCounter = counter++;
     mprint(ref, rest...);
-    (*ref)[oldC] = arg;
+    (*ref)[previousCounter] = arg;
 }
 
 int main() {

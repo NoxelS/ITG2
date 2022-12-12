@@ -27,7 +27,6 @@ class Vektor {
     Vektor(U erst, V... rest) : Vektor(rest...) {
         data[--pos] = erst;
     };
-
     /** Getter and Setter */
     size() { return size_v; };
     capcaity() { return capcaity_v; };
