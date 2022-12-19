@@ -3,9 +3,9 @@
 # - Sucht nach dem main-File und erzeugt dann ein exec mit dessen Namen
 # - Löscht alle .o Files
 
-CC	= g++
-CFLAGS	= -g -Wall -c -std=c++11
-LDFLAGS	= -g -lm -lrt
+CC	= g++-10
+CFLAGS	= -g -Wall -c -std=c++20 -fconcepts
+LDFLAGS	= -g -lm -lrt -lpthread
 SRC	= $(wildcard src/*.cpp)
 HDR	= $(wildcard src/*.h)
 TESTS = $(wildcard tests/*.test.cpp)
