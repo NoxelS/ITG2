@@ -9,7 +9,6 @@ struct ThreadDummy {
         t_ = std::thread(f);
     };
     ~ThreadDummy() {
-        std::cout << "ThreadDummy destructor";
-        if (t_.joinable()) t_.join();
+        // if (t_.joinable()) t_.join();
     };
 };

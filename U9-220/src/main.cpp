@@ -40,7 +40,6 @@ void sum(vector<int>& v, int* s0) {
     delete s2;
 }
 
-
 void msort(vector<int>& a) {
     if (a.size() > 1) {
         vector<int> a1(a.begin(), a.begin() + a.size() / 2);
@@ -81,9 +80,9 @@ void msort(vector<int>& a) {
     }
 }
 
-void dummyPrint(int i) {
-    cout << "Hello World: " << i << endl;
-}
+void dummyPrint(int i) { cout << "Hello World: " << i << endl; }
+
+int random(int from, int to) { return rand() % (to - from + 1) + from; }
 
 int main() {
     // const int len = 15;
@@ -100,7 +99,35 @@ int main() {
     // show(feld);
     // msort(feld);
     // show(feld);
-    {
-        ThreadDummy t([] { cout << "Hello World" << endl; });
+    // {
+    //     ThreadDummy t([] { cout << "Hello World" << endl; });
+    // }
+
+    uint8_t n = 50;
+    uint8_t* A = new uint8_t[n];
+
+    // Create random ints in array
+    for (size_t i = 0; i < n; ++i) A[i] = static_cast<uint8_t>(random(0, 10));
+    vector<uint8_t> sleepSorted;
+
+    // Print the array
+    for (int i = 0; i < n; ++i) cout << (int)A[i] << " ";
+    cout << endl;
+
+    // Sleep sort
+    vector<thread> threadList;
+    for (size_t i = 0; i < n; i++) {
+        threadList.push_back(thread([i, A, n, &sleepSorted] {
+            sleep(A[i]);
+            sleepSorted.push_back(A[i]);
+        }));
     }
+
+    // Join threads
+    for (auto& t : threadList) if (t.joinable()) t.join();
+
+    for (int i = 0; i < n; ++i) cout << (int)sleepSorted[i] << " ";
+    cout << endl;
+
+    delete A;
 }
