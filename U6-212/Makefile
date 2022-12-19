@@ -4,7 +4,7 @@
 # - Löscht alle .o Files
 
 CC	= g++
-CFLAGS	= -g -Wall -c -std=c++11
+CFLAGS	= -g -Wall -c -std=c++11 -Wl,--demangle
 LDFLAGS	= -g -lm -lrt
 SRC	= $(wildcard src/*.cpp)
 HDR	= $(wildcard src/*.h)
