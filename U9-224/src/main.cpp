@@ -14,7 +14,7 @@
 using namespace std;
 
 int activity[NTASKS];
-int done_tasks = 0;
+atomic<int> done_tasks = 0;
 vector<array<int, 2>> done_log;
 queue<function<int(void)>> TaskQueue;
 mutex TaskQueue_mtx;
