@@ -15,9 +15,10 @@ double addend(cmdstr&);
 double factor(cmdstr&);
 double number(cmdstr&);
 double factorial(double);
+void plot(cmdstr&);
 
 /** History container */
-vector<pair<uint16_t, cmdstr>> history;
+vector<pair<string, double>> history;
 
 class cmdstr {
    public:
@@ -26,7 +27,6 @@ class cmdstr {
 
     cmdstr(string s = "") {
         for (int i = 0; i < s.length(); i++) {
-            // Push stripped
             if (s[i] != ' ' && s[i] != '\0') str.push_back(s[i]);
         }
     }
@@ -74,52 +74,60 @@ ostream& operator<<(ostream& os, const cmdstr& s) {
         os << s.str[i];
     }
     os << endl;
-    for (int i = 0; i < s.str.size(); i++) {
-        if (i == s.pos) {
-            os << "^";
-        } else {
-            os << " ";
-        }
-    }
     return os;
 }
 
 /** Globals */
 map<char, cmdstr> fktlist;
-map<char, char> varlist; // Keep track of variable names of functions
+map<char, char> varlist;  // Keep track of variable names of functions
 map<char, double> constlist;
-
 
 int main() {
     string currentLine;
     cmdstr cmd;
-    int line = 0;
     bool end = false;
 
     while (!end) {
         cout << "\n>> ";
         getline(cin, currentLine);
         cmd = cmdstr(currentLine);
-        history.push_back(pair<uint16_t, cmdstr>(line, cmd));
 
         try {
             switch (cmd.peek()) {
-                case 'q':
+                case '\0':
                     end = true;
+                    break;
+                case '#':  // Plot a function
+                    cmd.next();
+                    plot(cmd);
                     break;
                 case ':':
                     cmd.next();
-                    definition(cmd);
-                    break;
-                case ';':
-                    cout << "History:" << endl;
-                    // Loop over history and print
-                    for (int i = 0; i < history.size(); i++) {
-                        cout << history[i].first << ": " << history[i].second << endl;
+                    if (cmd.peek() == '\0') {
+                        // Loop over function defs and constants and print them
+                        cout << "FUNCTIONS:" << endl;
+                        for (auto it = fktlist.begin(); it != fktlist.end(); it++) {
+                            cout << it->first << "(" << varlist[it->first] << ") = " << it->second << endl;
+                        }
+                        cout << "CONSTANTS:" << endl;
+                        for (auto it = constlist.begin(); it != constlist.end(); it++) {
+                            cout << it->first << " = " << it->second << endl;
+                        }
+                    } else {
+                        definition(cmd);
                     }
                     break;
-                 default:
-                    cout << expression(cmd);
+                case ';':
+                    // Loop over history and print
+                    cout << "HISOTRY:" << endl;
+                    for (int i = 0; i < history.size(); i++) {
+                        cout << "[" << i << "]: " << history[i].first << " = " << history[i].second << endl;
+                    }
+                    break;
+                default:
+                    double result = expression(cmd);
+                    history.push_back(pair<string, double>(currentLine, result));
+                    cout << result;
                     break;
             }
         } catch (const std::invalid_argument& e) {
@@ -151,9 +159,6 @@ void definition(cmdstr& cmd) {
         // Add the new function to the list
         fktlist.insert(pair<char, cmdstr>(identifier, def));
         varlist.insert(pair<char, char>(identifier, variableName));
-
-                cout
-            << "Added new function " << identifier << "(" << variableName << ")";
     } else {
         throw std::invalid_argument(
             "Syntax error: Invalid variable name in definition, exptected lower- or uppercase letter!");
@@ -199,8 +204,7 @@ double addend(cmdstr& cmd) {
                 s /= factor(cmd);
                 break;
             case '%':
-                // This down cast wont destroy floating point numbers because we dont support them anyway
-                s = (double)(static_cast<int>(s) % static_cast<int>(factor(cmd)));
+                s = fmod(s, factor(cmd));
                 break;
         }
 
@@ -210,7 +214,15 @@ double addend(cmdstr& cmd) {
 double factor(cmdstr& cmd) {
     double f;
 
-    if (cmd.peek() == '(') {
+    if (cmd.peek() == '[') {
+        /* [Line refrence ]*/
+        cmd.next();
+        int lineRef = expression(cmd);
+        if (cmd.next() != ']') throw std::invalid_argument("Syntax error: Missing closing bracket!");
+        if (lineRef < 0 || lineRef >= history.size())
+            throw std::invalid_argument("Syntax error: Line reference out of range!");
+        return history[lineRef].second;
+    } else if (cmd.peek() == '(') {
         /* ( Ausdruck )*/
         cmd.next();
         f = expression(cmd);
@@ -222,7 +234,6 @@ double factor(cmdstr& cmd) {
         } catch (const std::out_of_range& e) {
             throw std::invalid_argument("Syntax error: Undefined variable name!");
         }
-
     } else if (isupper(cmd.peek())) {
         char identifier = cmd.next();
         /* UpperLetter ( Ausdruck ) */
@@ -234,7 +245,8 @@ double factor(cmdstr& cmd) {
             } catch (const std::out_of_range& e) {
                 throw std::invalid_argument("Syntax error: Undefined function name!");
             }
-            // Parse the substring but add the parentheses back
+
+            // Parse the substring but add parentheses
             substring.str.push_back(')');
             substring.str.insert(substring.str.begin(), '(');
             f = expression(substring);
@@ -244,7 +256,6 @@ double factor(cmdstr& cmd) {
             throw std::invalid_argument("Syntax error: Missing parenthese!");
         }
     } else {
-        /** Number */
         f = number(cmd);
     }
 
@@ -265,12 +276,94 @@ double factor(cmdstr& cmd) {
 double number(cmdstr& cmd) {
     double z = 0;
     while (isdigit(cmd.peek())) z = 10 * z + double(cmd.next() - '0');
+
+    if (cmd.peek() ==
+        '.') {  // || cmd.peek() == ',') { <- This wont be used because we need the , for function arguments
+        cmd.next();
+        double p = 1;
+        while (isdigit(cmd.peek())) {
+            p *= 10;
+            z += double(cmd.next() - '0') / p;
+        }
+    }
+
     return (z);
 }
 
 double factorial(double n) {
-    if (n == 0)
-        return (1);
-    else
-        return (n * factorial(n - 1));
+    // use gamme function for floating point numbers
+    if (n != static_cast<int>(n)) return tgamma(n + 1);
+    if (n < 0) throw std::invalid_argument("Syntax error: Factorial of negative number!");
+    if (n == 0) return 1;
+    return n * factorial(n - 1);
+}
+
+/*
+ * Usage: #F, a, b, c
+ */
+void plot(cmdstr& cmd) {
+    cout << cmd;
+    if (!isupper(cmd.peek())) throw std::invalid_argument("Syntax error: Missing function name!");
+    char identifier = cmd.next();
+    if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
+
+    double start = expression(cmd);
+    if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
+
+    double end = expression(cmd);
+    if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
+
+    double step = expression(cmd);
+
+    std::map<double, double> xy;
+
+    for (double i = start; i <= end; i += step) {
+        cmdstr substring = fktlist.at(identifier).subst(i, varlist.at('F'));
+        double value = expression(substring);
+        xy[i] = value;
+    }
+
+    // Find max and min
+    double max = xy[0];
+    double min = xy[0];
+
+    for (auto& p : xy) {
+        if (p.second > max) max = p.second;
+        if (p.second < min) min = p.second;
+    }
+
+    // Find the range
+    double range = max - min;
+
+    // Find the scale
+    double scale = 1;
+
+    while (range / scale > 20) scale *= 10;
+    while (range / scale < 2) scale /= 10;
+
+    // Make the plot
+    cout << endl << endl;
+    for (double y = max; y >= min; y -= scale) {
+        cout << y << "\t|";
+        for (auto& p : xy) {
+            if (p.second > y - scale / 2 && p.second <= y + scale / 2) {
+                cout << " .";
+            } else {
+                cout << "  ";
+            }
+        }
+        cout << endl;
+    }
+
+    cout << " \t+";
+    for (auto& p : xy) {
+        cout << "--";
+    }
+    cout << endl;
+
+    cout << " \t ";
+    for (auto& p : xy) {
+        cout << " " << p.first;
+    }
+    cout << endl;
 }
