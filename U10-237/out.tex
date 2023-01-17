@@ -1,0 +1,33 @@
+\documentclass{letter}
+
+\usepackage{tikz-qtree}
+\usepackage{fancybox}
+
+\begin{document}
+\Tree
+[. \textbf{\textsf root}
+  [. \framebox{f}
+    [. \framebox{i}
+      [. \framebox{l}
+        [. \framebox{l}
+          \ovalbox{\textbf{\textsf a}}
+        ]
+      ]      [. \framebox{n}
+        [. \framebox{d}
+          \ovalbox{\textbf{\textsf X}}
+        ]
+      ]
+    ]    [. \framebox{o}
+      [. \framebox{r}
+        \ovalbox{\textbf{\textsf 5}}
+      ]
+    ]
+  ]
+  [. \framebox{i}
+    [. \framebox{f}
+      \ovalbox{\textbf{\textsf 1}}
+    ]
+  ]
+]
+
+\end{document}
