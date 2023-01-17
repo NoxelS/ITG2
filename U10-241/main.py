@@ -1,5 +1,7 @@
 # usr/bin/python3
+
 import copy
+
 
 # BNF Syntax
 BNFSYMBOLS = dict()
@@ -115,8 +117,10 @@ def parse(grammar, string):
 # Generate grammar from file.
 grammar = gen_grammar_from_file('filebase.y')
 
+
 # Generate first dictionary.
 first_dict = gen_first_dict(grammar)
 follow_dict = gen_follow_dict(grammar, first_dict)
+
 
 print(follow_dict)
