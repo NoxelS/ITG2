@@ -302,7 +302,7 @@ double factorial(double n) {
  * Usage: #F, a, b, c
  */
 void plot(cmdstr& cmd) {
-    cout << cmd;
+    cout << "THIS FUNCTION IS NOT PROPERLY IMPLEMENTED YET!" << endl;
     if (!isupper(cmd.peek())) throw std::invalid_argument("Syntax error: Missing function name!");
     char identifier = cmd.next();
     if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
