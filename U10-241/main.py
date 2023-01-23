@@ -9,6 +9,12 @@ BNFSYMBOLS['assign'] = '->'  # standard is "::="
 BNFSYMBOLS['comment'] = '#'  # could also be "//"
 BNFSYMBOLS['epsilon'] = '@'  # could also be "//"
 
+# Utils
+
+def print_dict(d):
+    for key, value in d.items():
+        print(key, " -> ", value)
+
 
 def gen_grammar(string):
     """Generate a productions for a given BNF string."""
@@ -100,9 +106,28 @@ def gen_follow_dict(grammar, first_dict=None):
     # Regel 1: Follow(S) = { $ }
     follow_dict['S'] = set('$')
 
-    # Update follow_dict until it doesn't change anymore.
-    # TODO
+    old_dict = {}
+    while old_dict != follow_dict:
+        old_dict = copy.deepcopy(follow_dict)  
 
+        for derivative in grammar['nonterms']:
+            for production in grammar['productions'][derivative]:
+                if any(B in grammar['nonterms'] for B in production): # Check if there are any nonterms
+                    for i, cursor in enumerate(production):
+                        # print(f"{derivative} -> {i}: {cursor}")
+                        if cursor in grammar['nonterms']:
+                            # Cursor points to nonterm -> Cursor = B
+                            alpha = production[0:i]
+                            beta = production[i+1:len(production)]
+                            B = cursor
+
+                            # Regel 2 A => aBb
+                            if beta:
+                                follow_dict[B] = follow_dict[B].union(first_dict[beta] - {BNFSYMBOLS['epsilon']})
+
+                            # Regel 3 A => aB | A => aBb & B => ep
+                            if B in grammar['nonterms'] or (beta and BNFSYMBOLS['epsilon'] in grammar['productions'][derivative]):
+                                follow_dict[B] = follow_dict[B].union(follow_dict[derivative])
     return follow_dict
 
 
@@ -123,4 +148,5 @@ first_dict = gen_first_dict(grammar)
 follow_dict = gen_follow_dict(grammar, first_dict)
 
 
-print(follow_dict)
+print_dict(grammar)
+print_dict(follow_dict)
