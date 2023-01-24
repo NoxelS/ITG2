@@ -8,11 +8,16 @@ BNFSYMBOLS = dict()
 BNFSYMBOLS['assign'] = '->'  # standard is "::="
 BNFSYMBOLS['comment'] = '#'  # could also be "//"
 BNFSYMBOLS['epsilon'] = '@'  # could also be "//"
+BNFSYMBOLS['start'] = 'S'
 
 # Utils
 
-def print_dict(d):
+def print_dict(d, name=None):
+    if name:
+        print(name, ":")
     for key, value in d.items():
+        if name:
+            print("\t", end="")
         print(key, " -> ", value)
 
 
@@ -78,11 +83,11 @@ def gen_first_dict(grammar):
         if BNFSYMBOLS['epsilon'] in grammar['productions'][nonterm]:
             first_dict[nonterm].add(BNFSYMBOLS['epsilon'])
 
-    for nonterm in grammar['nonterms']:
-        for option in grammar['productions'][nonterm]:
-            updated = True
-            while updated:
-                updated = False
+    first_dict_copy = {}
+    while first_dict_copy != first_dict:
+        first_dict_copy = copy.deepcopy(first_dict)
+        for nonterm in grammar['nonterms']:
+            for option in grammar['productions'][nonterm]:
                 for symbol in option:
                     if symbol in grammar['terms']:
                         first_dict[nonterm].add(symbol)
@@ -104,11 +109,11 @@ def gen_follow_dict(grammar, first_dict=None):
         follow_dict[nonterm] = set()
 
     # Regel 1: Follow(S) = { $ }
-    follow_dict['S'] = set('$')
+    follow_dict[BNFSYMBOLS['start']] = set('$')
 
     old_dict = {}
     while old_dict != follow_dict:
-        old_dict = copy.deepcopy(follow_dict)  
+        old_dict = copy.deepcopy(follow_dict)
 
         for derivative in grammar['nonterms']:
             for production in grammar['productions'][derivative]:
@@ -117,18 +122,46 @@ def gen_follow_dict(grammar, first_dict=None):
                         # print(f"{derivative} -> {i}: {cursor}")
                         if cursor in grammar['nonterms']:
                             # Cursor points to nonterm -> Cursor = B
-                            alpha = production[0:i]
+                            alpha = production[0:i] # We don't need that, only for debugging
                             beta = production[i+1:len(production)]
                             B = cursor
 
                             # Regel 2 A => aBb
                             if beta:
-                                follow_dict[B] = follow_dict[B].union(first_dict[beta] - {BNFSYMBOLS['epsilon']})
+                                for b in beta:  # beta could be a string of terminals and nonterms
+                                    follow_dict[B] = follow_dict[B].union(first_dict[b] - {BNFSYMBOLS['epsilon']})
 
                             # Regel 3 A => aB | A => aBb & B => ep
                             if B in grammar['nonterms'] or (beta and BNFSYMBOLS['epsilon'] in grammar['productions'][derivative]):
                                 follow_dict[B] = follow_dict[B].union(follow_dict[derivative])
     return follow_dict
+
+def gen_lookahead_dict(grammar, first_dict, follow_dict):
+    lookahead_dict = dict()
+
+    for nonterm in grammar['nonterms']:
+        for production in grammar['productions'][nonterm]:
+            # print(f"First([{production}]Follow({nonterm}))", end=" = ")
+            follow_set = follow_dict[nonterm]
+            # print(f"First([{production}][{follow_set}])", end=" = ")
+            concatination = []
+            for B in follow_set:
+                concatination.append("".join([production, B]))
+
+            tmp_dict = dict()
+            for element in concatination:
+                for char in element:
+                    if char in grammar['nonterms']:
+                        tmp_dict[element] = first_dict[char]
+                        if BNFSYMBOLS['epsilon'] not in first_dict[char]:
+                            break
+                    elif char in grammar['terms']:
+                        tmp_dict[element] = set(char)
+                        break
+            lookahead_dict[nonterm] = tmp_dict
+
+
+    return lookahead_dict
 
 
 def gen_parsetable(grammar):
@@ -142,11 +175,12 @@ def parse(grammar, string):
 # Generate grammar from file.
 grammar = gen_grammar_from_file('filebase.y')
 
-
 # Generate first dictionary.
 first_dict = gen_first_dict(grammar)
 follow_dict = gen_follow_dict(grammar, first_dict)
+lookahead_dict = gen_lookahead_dict(grammar, first_dict, follow_dict)
 
-
-print_dict(grammar)
-print_dict(follow_dict)
+print_dict(grammar, 'Grammar')
+print_dict(first_dict, 'First-Set')
+print_dict(follow_dict, 'Follow-Set')
+print_dict(lookahead_dict, 'Lookahead-Set')
