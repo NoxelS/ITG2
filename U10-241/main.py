@@ -1,6 +1,7 @@
 # usr/bin/python3
 
 import copy
+import os
 
 
 # BNF Syntax
@@ -20,6 +21,15 @@ def print_dict(d, name=None):
             print("\t", end="")
         print(key, " -> ", value)
 
+def print_dict_string(d, name=None):
+    string = ""
+    if name:
+        string += name + ":\n"
+    for key, value in d.items():
+        if name:
+            string += "\t"
+        string += str(key) + " -> " + str(value) + "\n"
+    return string
 
 def gen_grammar(string):
     """Generate a productions for a given BNF string."""
@@ -136,30 +146,36 @@ def gen_follow_dict(grammar, first_dict=None):
                                 follow_dict[B] = follow_dict[B].union(follow_dict[derivative])
     return follow_dict
 
+
+def gen_lookahead_set(production, nonterm, grammar, first_dict, follow_dict):
+    # Clculate LA_1(production, nonterm) 
+    lookahead_set = set()
+    follow_set = follow_dict[nonterm]
+    concatination = []
+    for B in follow_set:
+        concatination.append("".join([production, B]))
+    
+    for element in concatination:
+        print(element)
+        for char in element:
+            if char in grammar['nonterms']:
+                lookahead_set = lookahead_set.union(first_dict[char])
+                print(first_dict[char],lookahead_set)
+                break
+            elif char is not BNFSYMBOLS['epsilon']:
+                print(f"c-{char}")
+                lookahead_set.add(char)
+                break
+    return lookahead_set
+
 def gen_lookahead_dict(grammar, first_dict, follow_dict):
     lookahead_dict = dict()
 
     for nonterm in grammar['nonterms']:
+        lookahead_dict[nonterm] = dict()
+
         for production in grammar['productions'][nonterm]:
-            # print(f"First([{production}]Follow({nonterm}))", end=" = ")
-            follow_set = follow_dict[nonterm]
-            # print(f"First([{production}][{follow_set}])", end=" = ")
-            concatination = []
-            for B in follow_set:
-                concatination.append("".join([production, B]))
-
-            tmp_dict = dict()
-            for element in concatination:
-                for char in element:
-                    if char in grammar['nonterms']:
-                        tmp_dict[element] = first_dict[char]
-                        if BNFSYMBOLS['epsilon'] not in first_dict[char]:
-                            break
-                    elif char in grammar['terms']:
-                        tmp_dict[element] = set(char)
-                        break
-            lookahead_dict[nonterm] = tmp_dict
-
+            lookahead_dict[nonterm][production] = gen_lookahead_set(production, nonterm, grammar, first_dict, follow_dict)
 
     return lookahead_dict
 
@@ -172,15 +188,32 @@ def parse(grammar, string):
     pass
 
 
-# Generate grammar from file.
-grammar = gen_grammar_from_file('filebase.y')
+def full_analysis(grammar, path):
+    print(path)
+    # Generate grammar from file.
+    grammar = gen_grammar_from_file(path)
 
-# Generate first dictionary.
-first_dict = gen_first_dict(grammar)
-follow_dict = gen_follow_dict(grammar, first_dict)
-lookahead_dict = gen_lookahead_dict(grammar, first_dict, follow_dict)
+    # Generate first dictionary.
+    first_dict = gen_first_dict(grammar)
+    follow_dict = gen_follow_dict(grammar, first_dict)
+    lookahead_dict = gen_lookahead_dict(grammar, first_dict, follow_dict)
 
-print_dict(grammar, 'Grammar')
-print_dict(first_dict, 'First-Set')
-print_dict(follow_dict, 'Follow-Set')
-print_dict(lookahead_dict, 'Lookahead-Set')
+    # Save all dictionaries to file with description line
+    with open(path + '.analysis', 'w') as f:
+        f.write('First dictionary:\n')
+        f.write(print_dict_string(first_dict))
+        f.write('\n\nFollow dictionary:\n')
+        f.write(print_dict_string(follow_dict))
+        f.write('\n\nLookahead dictionary:\n')
+        f.write(print_dict_string(lookahead_dict))
+
+    return grammar, first_dict, follow_dict, lookahead_dict
+
+def folder_analysis(path):
+    for filename in os.listdir(path):
+        if filename.endswith('.y'):
+            full_analysis(None, os.path.join(path, filename))
+
+if __name__ == '__main__':
+    # full_analysis(None, 'test.y')
+    folder_analysis('grammars')

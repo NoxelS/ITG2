@@ -1,0 +1,11 @@
+First dictionary:
+a -> {'a'}
+S -> {'a'}
+
+
+Follow dictionary:
+S -> {'$'}
+
+
+Lookahead dictionary:
+S -> {'a': {'a'}}

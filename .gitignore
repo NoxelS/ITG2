@@ -47,3 +47,6 @@ test
 unit_tests
 */unit_tests
 */src/unit_tests
+
+# Asm files
+*.asm

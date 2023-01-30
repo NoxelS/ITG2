@@ -1,0 +1,16 @@
+First dictionary:
+  -> {' '}
+b -> {'b'}
+a -> {'a'}
+T -> set()
+S -> {'a'}
+
+
+Follow dictionary:
+T -> {'$', ' ', 'b', 'a'}
+S -> {'$', ' ', 'b', 'a'}
+
+
+Lookahead dictionary:
+T -> {'T S': set()}
+S -> {'a T b': {'a'}}
