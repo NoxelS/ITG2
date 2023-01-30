@@ -117,7 +117,7 @@ class cpu:
     "ldx":   6,
     "stx":   6,
     "lda":   5,
-    "sta":   5,		
+    "sta":   5,
     "push":  5,
     "pop":   6,
     "jmp":   5,

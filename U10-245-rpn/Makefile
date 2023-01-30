@@ -4,25 +4,22 @@
 # - Löscht alle .o Files
 
 CC	= g++-10
-CFLAGS	= -g -Wall -c -std=c++20 -fconcepts
+CFLAGS	= -g -Wall -c -std=c++20
 LDFLAGS	= -g -lm -lrt -lpthread
 SRC	= $(wildcard src/*.cpp)
 HDR	= $(wildcard src/*.h)
-TESTS = $(wildcard tests/*.test.cpp)
-TESTS_OBJ = $(TESTS:.cpp=.o)
 OBJ	= $(SRC:.cpp=.o)
 EXE	= main #$(shell egrep -l ".* main\(.*\)" src/*.cpp | sed s/".cpp"/""/g | tail -n 1)
 
-all:	$(EXE)
+all: main
 	rm -f */*.o
 	rm -f */*.s
 	rm -f */*.ii
 	
-$(EXE):	$(OBJ) 
-	$(CC) $(OBJ) $(LDFLAGS) -o $@
 
-.cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+main:	src/main.cpp
+	g++-10 ./src/main.cpp -o main
+
 
 clean:
 	rm -f */*.o
@@ -31,3 +28,4 @@ clean:
 	rm -f $(EXE)
 	rm -f ./$(EXE)
 	rm -f test
+	rm -f rpn
