@@ -1,0 +1,25 @@
+MAIN( ) {
+    a = b + 3;
+    b = 20 * a ;
+    abc = a * b / 40;
+    a = b + 3;
+    b = 20 * a ;
+    abc = a * b / 40;
+    a = b + 3;
+    b = 20 * a ;
+    abc = a * b / 40;
+    a = b + 3;
+    b = 20 * a ;
+    abc = a * b / 40;
+    WHILE(a == 10) {
+        abc = - abc + ( a +20) * (b -57) / 30 +
+            
+            44;
+    }
+    xyz = abc % 4 * 12 - 1;
+    IF(abc == 10) THEN {
+        xyz = 10;
+    } ELSE {
+        xyz = 20;
+    } 
+}

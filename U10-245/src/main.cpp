@@ -2,267 +2,36 @@
 
 #include <fstream>
 #include <iostream>
-#include <ostream>
 #include <map>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-
 #include "cmdstr.h"
+#include "compiler.h"
+#include "lexer.h"
 #include "syntax.h"
 
-using namespace std;
-
-// Prototypes
-void compileLine(cmdstr&, string&);
-double expression(cmdstr&);
-void definition(cmdstr&);
-double addend(cmdstr&);
-double factor(cmdstr&);
-double number(cmdstr&);
-double factorial(double);
-void plot(cmdstr&);
-
-/** History container */
-vector<pair<string, double>> history;
-
-/** Globals */
-map<char, cmdstr> fktlist;
-map<char, char> varlist;  // Keep track of variable names of functions
-map<char, double> constlist;
-
-/** Container for ASM output */
-vector<string> asmText;
-vector<string> asmData;
-
 int main(int arc, char* argv[]) {
-    string currentLine;
-    cmdstr cmd;
-    bool end = false;
+    /** Container for ASM output */
+    std::vector<std::string> asmText;
+    std::vector<std::string> asmData;
 
-    // If a file is given as argument, compile it, otherwise start the JIT compiler
     if (arc > 1) {
-        cout << "Compiling file " << argv[1] << endl;
-        ifstream inputFile(argv[1]);
-
-        if (!inputFile) {
-            cout << "File not found" << endl;
-            return 1;
-        }
-
-        while (getline(inputFile, currentLine)) {
-            cmd = cmdstr(currentLine);
-            cout << cmd;
-            compileLine(cmd, currentLine);
-        }
+        compileFile(asmText, asmData, argv[1]);
 
     } else {
-        throw runtime_error("Terminal mode not implemented yet. Specify a file to compile.");
-        // while (!end) {
-        //     cout << "\n>> ";
-        //     getline(cin, currentLine);
-        //     cmd = cmdstr(currentLine);
-        //     compileLine(cmd, currentLine);
-        // }
-    }
-}
-
-void compileLine(cmdstr& cmd, string& currentLine) {
-    try {
-        switch (cmd.peek()) {
-            case ':':
-                cmd.next();
-                if (cmd.peek() == '\0') {
-                    // Loop over function defs and constants and print them
-                    cout << "FUNCTIONS:" << endl;
-                    for (auto it = fktlist.begin(); it != fktlist.end(); it++) {
-                        cout << it->first << "(" << varlist[it->first] << ") = " << it->second << endl;
-                    }
-                    cout << "CONSTANTS:" << endl;
-                    for (auto it = constlist.begin(); it != constlist.end(); it++) {
-                        cout << it->first << " = " << it->second << endl;
-                    }
-                } else {
-                    definition(cmd);
-                }
-                break;
-            case ';':
-                // Loop over history and print
-                cout << "HISOTRY:" << endl;
-                for (int i = 0; i < history.size(); i++) {
-                    cout << "[" << i << "]: " << history[i].first << " = " << history[i].second << endl;
-                }
-                break;
-            default:
-                double result = expression(cmd);
-                history.push_back(pair<string, double>(currentLine, result));
-                cout << result;
-                break;
-        }
-    } catch (const std::invalid_argument& e) {
-        std::cerr << e.what();
-    }
-}
-
-void definition(cmdstr& cmd) {
-    char identifier = cmd.next();
-
-    if (islower(identifier)) {
-        if (cmd.next() != '=')
-            throw std::invalid_argument("Syntax error in definition, expected '=' after identifier!");
-        constlist.insert(pair<char, double>(identifier, expression(cmd)));
-
-    } else if (isupper((identifier))) {
-        if (cmd.next() != '(')
-            throw std::invalid_argument("Syntax error in definition, exptected paranthese after identifier!");
-        char variableName = cmd.next();
-        if (!islower(variableName))
-            throw std::invalid_argument("Syntax error in definition, variable names can only be variable names!");
-        if (cmd.next() != ')') throw std::invalid_argument("Syntax error in definition, missing closing paranthese!");
-        if (cmd.next() != '=') throw std::invalid_argument("Syntax error in definition, expected '='!");
-
-        // Create a new cmdstr for the rext
-        cmdstr def = cmdstr(cmd);
-
-        // Add the new function to the list
-        fktlist.insert(pair<char, cmdstr>(identifier, def));
-        varlist.insert(pair<char, char>(identifier, variableName));
-    } else {
-        throw std::invalid_argument(
-            "Syntax error: Invalid variable name in definition, exptected lower- or uppercase letter!");
-    }
-}
-
-double expression(cmdstr& cmd) {
-    double a;
-
-    switch (cmd.peek()) {
-        case '+':
-            cmd.next();
-            a = +addend(cmd);
-            break;
-        case '-':
-            cmd.next();
-            a = -addend(cmd);
-            break;
-        default:
-            a = addend(cmd);
-            break;
-    }
-
-    while (cmd.peek() == '+' || cmd.peek() == '-') switch (cmd.next()) {
-            case '+':
-                a += addend(cmd);
-                break;
-            case '-':
-                a -= addend(cmd);
-                break;
+        std::string input;
+        std::string currentLine;
+        int lineCount = 1;
+        std::cout << "Enter code to compile. Enter 'exit()' to exit." << std::endl << lineCount << " |\t";
+        while (std::getline(std::cin, currentLine) && currentLine != "exit()") {
+            input += currentLine + "\n";
+            lineCount++;
+            std::cout << lineCount << " |\t";
         }
 
-    return (a);
-}
-
-double addend(cmdstr& cmd) {
-    double s = factor(cmd);
-    while (cmd.peek() == '*' || cmd.peek() == '/' || cmd.peek() == '%') switch (cmd.next()) {
-            case '*':
-                s *= factor(cmd);
-                break;
-            case '/':
-                s /= factor(cmd);
-                break;
-            case '%':
-                s = fmod(s, factor(cmd));
-                break;
-        }
-
-    return (s);
-}
-
-double factor(cmdstr& cmd) {
-    double f;
-
-    if (cmd.peek() == '[') {
-        /* [Line refrence ]*/
-        cmd.next();
-        int lineRef = expression(cmd);
-        if (cmd.next() != ']') throw std::invalid_argument("Syntax error: Missing closing bracket!");
-        if (lineRef < 0 || lineRef >= history.size())
-            throw std::invalid_argument("Syntax error: Line reference out of range!");
-        return history[lineRef].second;
-    } else if (cmd.peek() == '(') {
-        /* ( Ausdruck )*/
-        cmd.next();
-        f = expression(cmd);
-        if (cmd.next() != ')') throw std::invalid_argument("Syntax error: Missing closing parenthese!");
-    } else if (islower(cmd.peek())) {
-        /* LowerLetter */
-        try {
-            f = constlist.at(cmd.next());
-        } catch (const std::out_of_range& e) {
-            throw std::invalid_argument("Syntax error: Undefined variable name!");
-        }
-    } else if (isupper(cmd.peek())) {
-        char identifier = cmd.next();
-        /* UpperLetter ( Ausdruck ) */
-        if (cmd.next() == '(') {
-            long valueAt = expression(cmd);
-            cmdstr substring;
-            try {
-                substring = fktlist.at(identifier).subst(valueAt, varlist.at(identifier));
-            } catch (const std::out_of_range& e) {
-                throw std::invalid_argument("Syntax error: Undefined function name!");
-            }
-
-            // Parse the substring but add parentheses
-            substring.str.push_back(')');
-            substring.str.insert(substring.str.begin(), '(');
-            f = expression(substring);
-
-            if (cmd.next() != ')') throw std::invalid_argument("Syntax error: Missing closing parenthese!");
-        } else {
-            throw std::invalid_argument("Syntax error: Missing parenthese!");
-        }
-    } else {
-        f = number(cmd);
+        compileString(asmText, asmData, input);
     }
-
-    // Check if there is a ! or ^ after the number
-    while (cmd.peek() == '!') {
-        f = factorial(f);
-        cmd.next();
-    }
-
-    if (cmd.peek() == '^') {
-        cmd.next();
-        f = pow(f, factor(cmd));
-    }
-
-    return (f);
-}
-
-double number(cmdstr& cmd) {
-    double z = 0;
-    while (isdigit(cmd.peek())) z = 10 * z + double(cmd.next() - '0');
-
-    if (cmd.peek() ==
-        '.') {  // || cmd.peek() == ',') { <- This wont be used because we need the , for function arguments
-        cmd.next();
-        double p = 1;
-        while (isdigit(cmd.peek())) {
-            p *= 10;
-            z += double(cmd.next() - '0') / p;
-        }
-    }
-
-    return (z);
-}
-
-double factorial(double n) {
-    // use gamme function for floating point numbers
-    if (n != static_cast<int>(n)) return tgamma(n + 1);
-    if (n < 0) throw std::invalid_argument("Syntax error: Factorial of negative number!");
-    if (n == 0) return 1;
-    return n * factorial(n - 1);
 }
