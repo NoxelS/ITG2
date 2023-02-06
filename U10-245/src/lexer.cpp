@@ -29,8 +29,6 @@ void lex_line(std::vector<char>& container, std::string line) {
         }
     }
 
-    for (char c : line) std::cout << c;
-
     // Add to container
     for (char c : line) container.push_back(c);
 }
