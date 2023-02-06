@@ -1,15 +1,20 @@
-using namespace std;
 #include <math.h>
 
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
+
+#include "cmdstr.h"
+#include "syntax.h"
+
+using namespace std;
+
 // Prototypes
-class cmdstr;
 void compileLine(cmdstr&, string&);
 double expression(cmdstr&);
 void definition(cmdstr&);
@@ -22,67 +27,14 @@ void plot(cmdstr&);
 /** History container */
 vector<pair<string, double>> history;
 
-class cmdstr {
-   public:
-    vector<char> str = vector<char>();
-    int pos = 0;
-
-    cmdstr(string s = "") {
-        for (int i = 0; i < s.length(); i++) {
-            if (s[i] != ' ' && s[i] != '\0') str.push_back(s[i]);
-        }
-    }
-
-    cmdstr(const cmdstr& s) {
-        for (int i = s.pos; i < s.str.size(); i++) {
-            str.push_back(s.str[i]);
-        }
-    }
-
-    cmdstr subst(long n, char identifier = 'x') {
-        string s = "";
-
-        for (int i = 0; i < str.size(); i++) {
-            if (str[i] == identifier) {
-                s += to_string(n);
-            } else {
-                s += str[i];
-            }
-        }
-
-        return cmdstr(s);
-    }
-
-    char next() {
-        if (pos < str.size()) {
-            return str[pos++];
-        } else {
-            return '\0';
-        }
-    }
-
-    char peek() {
-        if (pos < str.size()) {
-            return str[pos];
-        } else {
-            return '\0';
-        }
-    }
-};
-
-// Ostream for cmdlist
-ostream& operator<<(ostream& os, const cmdstr& s) {
-    for (int i = 0; i < s.str.size(); i++) {
-        os << s.str[i];
-    }
-    os << endl;
-    return os;
-}
-
 /** Globals */
 map<char, cmdstr> fktlist;
 map<char, char> varlist;  // Keep track of variable names of functions
 map<char, double> constlist;
+
+/** Container for ASM output */
+vector<string> asmText;
+vector<string> asmData;
 
 int main(int arc, char* argv[]) {
     string currentLine;
@@ -106,26 +58,19 @@ int main(int arc, char* argv[]) {
         }
 
     } else {
-        /* JIT Compiler - not implemented jet*/
-        while (!end) {
-            cout << "\n>> ";
-            getline(cin, currentLine);
-            cmd = cmdstr(currentLine);
-            compileLine(cmd, currentLine);
-        }
+        throw runtime_error("Terminal mode not implemented yet. Specify a file to compile.");
+        // while (!end) {
+        //     cout << "\n>> ";
+        //     getline(cin, currentLine);
+        //     cmd = cmdstr(currentLine);
+        //     compileLine(cmd, currentLine);
+        // }
     }
 }
 
 void compileLine(cmdstr& cmd, string& currentLine) {
     try {
         switch (cmd.peek()) {
-            // case '\0':
-            //     end = true;
-            //     break;
-            case '#':  // Plot a function
-                cmd.next();
-                plot(cmd);
-                break;
             case ':':
                 cmd.next();
                 if (cmd.peek() == '\0') {
@@ -320,74 +265,4 @@ double factorial(double n) {
     if (n < 0) throw std::invalid_argument("Syntax error: Factorial of negative number!");
     if (n == 0) return 1;
     return n * factorial(n - 1);
-}
-
-/*
- * Usage: #F, a, b, c
- */
-void plot(cmdstr& cmd) {
-    cout << "THIS FUNCTION IS NOT PROPERLY IMPLEMENTED YET!" << endl;
-    if (!isupper(cmd.peek())) throw std::invalid_argument("Syntax error: Missing function name!");
-    char identifier = cmd.next();
-    if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
-
-    double start = expression(cmd);
-    if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
-
-    double end = expression(cmd);
-    if (cmd.next() != ',') throw std::invalid_argument("Syntax error: Missing comma!");
-
-    double step = expression(cmd);
-
-    std::map<double, double> xy;
-
-    for (double i = start; i <= end; i += step) {
-        cmdstr substring = fktlist.at(identifier).subst(i, varlist.at('F'));
-        double value = expression(substring);
-        xy[i] = value;
-    }
-
-    // Find max and min
-    double max = xy[0];
-    double min = xy[0];
-
-    for (auto& p : xy) {
-        if (p.second > max) max = p.second;
-        if (p.second < min) min = p.second;
-    }
-
-    // Find the range
-    double range = max - min;
-
-    // Find the scale
-    double scale = 1;
-
-    while (range / scale > 20) scale *= 10;
-    while (range / scale < 2) scale /= 10;
-
-    // Make the plot
-    cout << endl << endl;
-    for (double y = max; y >= min; y -= scale) {
-        cout << y << "\t|";
-        for (auto& p : xy) {
-            if (p.second > y - scale / 2 && p.second <= y + scale / 2) {
-                cout << " .";
-            } else {
-                cout << "  ";
-            }
-        }
-        cout << endl;
-    }
-
-    cout << " \t+";
-    for (auto& p : xy) {
-        cout << "--";
-    }
-    cout << endl;
-
-    cout << " \t ";
-    for (auto& p : xy) {
-        cout << " " << p.first;
-    }
-    cout << endl;
 }
