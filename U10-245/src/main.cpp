@@ -22,16 +22,20 @@ int main(int arc, char* argv[]) {
         compileFile(asmText, asmData, argv[1]);
 
     } else {
-        std::string input;
+        std::string input = "MAIN() {\n";
         std::string currentLine;
         int lineCount = 1;
-        std::cout << "Enter code to compile. Enter 'exit()' to exit." << std::endl << lineCount << " |\t";
+        std::cout << "Inline mode: Enter code to compile. Enter 'exit()' to exit." << std::endl << lineCount << " |\t";
         while (std::getline(std::cin, currentLine) && currentLine != "exit()") {
             input += currentLine + "\n";
             lineCount++;
             std::cout << lineCount << " |\t";
         }
-
-        compileString(asmText, asmData, input);
+        input += "\n}";
+        try {
+            compileString(asmText, asmData, input);
+        } catch (const SyntaxError& e) {
+            // TODO
+        }
     }
 }
